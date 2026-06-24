@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JOBFLOW Admin — 求人管理</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --surface2: #1a1a1a;
+    --surface3: #222222;
+    --border: #2a2a2a;
+    --neon: #b4ff4d;
+    --neon-dim: rgba(180, 255, 77, 0.1);
+    --neon-glow: 0 0 24px rgba(180, 255, 77, 0.25);
+    --accent2: #4dffe0;
+    --accent2: #4dffe0;
+    --red: #ff4d6b;
+    --text: #eaeaea;
+    --text-muted: #8a8a8a;
+    --text-sub: #aaaaaa;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    grid-template-rows: 64px 1fr;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* TOPBAR */
+  .topbar {
+    grid-column: 1 / -1;
+    background: rgba(10,10,10,0.95);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+
+  .logo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  .logo span { color: var(--neon); }
+  .logo .admin-tag {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-left: 10px;
+    vertical-align: middle;
+  }
+
+  .topbar-right { display: flex; align-items: center; gap: 14px; }
+
+  .preview-link {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-decoration: none;
+    border: 1px solid var(--border);
+    padding: 7px 14px;
+    border-radius: 6px;
+    font-family: 'Space Grotesk', sans-serif;
+    transition: all 0.2s;
+  }
+  .preview-link:hover { border-color: var(--neon); color: var(--neon); }
+
+  .save-status {
+    font-size: 11px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--neon);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  /* SIDEBAR */
+  .sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 24px 16px;
+    overflow-y: auto;
+  }
+
+  .sidebar-section-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-weight: 600;
+    padding: 0 8px;
+    margin-bottom: 8px;
+  }
+
+  .stat-cards { display: grid; gap: 8px; margin-bottom: 28px; }
+
+  .stat-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .stat-card .val {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--neon);
+    letter-spacing: -1px;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .stat-card .lbl {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .job-list-mini { display: grid; gap: 2px; margin-bottom: 28px; }
+
+  .job-mini-item {
+    padding: 10px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .job-mini-item:hover { background: var(--surface2); }
+  .job-mini-item.selected { background: var(--neon-dim); }
+
+  .job-mini-title {
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 140px;
+  }
+
+  .mini-status {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .mini-status.active { background: var(--neon); }
+  .mini-status.inactive { background: var(--text-muted); }
+
+  .new-job-btn {
+    width: 100%;
+    background: var(--neon);
+    color: #000;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: all 0.2s;
+    margin-bottom: 28px;
+  }
+  .new-job-btn:hover { box-shadow: var(--neon-glow); }
+
+  /* MAIN CONTENT */
+  .main {
+    padding: 32px;
+    overflow-y: auto;
+    background: var(--bg);
+  }
+
+  .main-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .main-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 4px;
+  }
+  .main-subtitle { font-size: 13px; color: var(--text-muted); }
+
+  .form-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  .btn-primary {
+    background: var(--neon);
+    color: #000;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    border: none;
+    padding: 11px 22px;
+    border-radius: 8px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: all 0.2s;
+  }
+  .btn-primary:hover { box-shadow: var(--neon-glow); transform: translateY(-1px); }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--text-sub);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid var(--border);
+    padding: 11px 22px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-secondary:hover { border-color: var(--text-sub); color: var(--text); }
+
+  .btn-danger {
+    background: transparent;
+    color: var(--red);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid rgba(255, 77, 107, 0.3);
+    padding: 11px 22px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-danger:hover { background: rgba(255, 77, 107, 0.1); }
+
+  /* FORM */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  .form-full { grid-column: 1 / -1; }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .field label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  .field label .required {
+    color: var(--neon);
+    margin-left: 4px;
+  }
+
+  .field input, .field select, .field textarea {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    padding: 12px 14px;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    border-color: var(--neon);
+    box-shadow: 0 0 0 3px rgba(180,255,77,0.08);
+  }
+  .field input::placeholder, .field textarea::placeholder { color: var(--text-muted); }
+
+  .field select option { background: var(--surface2); }
+
+  .field textarea {
+    resize: vertical;
+    min-height: 120px;
+    line-height: 1.6;
+  }
+
+  .field .hint {
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  /* SECTION DIVIDER */
+  .form-section {
+    margin-bottom: 28px;
+    padding: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+
+  .form-section-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--neon);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .form-section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* TOGGLE */
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+  .toggle-info .toggle-label { font-size: 14px; font-weight: 500; margin-bottom: 2px; }
+  .toggle-info .toggle-desc { font-size: 12px; color: var(--text-muted); }
+
+  .toggle {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
+  }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .slider {
+    position: absolute;
+    inset: 0;
+    background: var(--border);
+    border-radius: 24px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .slider::before {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    left: 3px;
+    top: 3px;
+    background: var(--text-muted);
+    border-radius: 50%;
+    transition: 0.2s;
+  }
+  .toggle input:checked + .slider { background: var(--neon-dim); border: 1px solid var(--neon); }
+  .toggle input:checked + .slider::before { background: var(--neon); transform: translateX(20px); }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    background: var(--surface);
+    border: 1px solid var(--neon);
+    color: var(--text);
+    font-size: 13px;
+    font-family: 'Space Grotesk', sans-serif;
+    padding: 14px 20px;
+    border-radius: 10px;
+    box-shadow: var(--neon-glow);
+    transform: translateY(20px);
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 999;
+    pointer-events: none;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* JOB TABLE */
+  .jobs-table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .table-toolbar {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .table-search {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    padding: 8px 14px;
+    border-radius: 6px;
+    outline: none;
+    width: 240px;
+    transition: border-color 0.2s;
+  }
+  .table-search:focus { border-color: var(--neon); }
+  .table-search::placeholder { color: var(--text-muted); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  thead th {
+    text-align: left;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 12px 16px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    font-family: 'Space Grotesk', sans-serif;
+  }
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+    cursor: pointer;
+  }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--surface2); }
+  tbody td { padding: 14px 16px; }
+
+  .td-title { font-weight: 500; color: var(--text); }
+  .td-company { color: var(--text-muted); font-size: 12px; }
+  .td-wage { font-family: 'Space Grotesk', sans-serif; font-weight: 600; color: var(--neon); }
+
+  .td-type span {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    padding: 3px 7px;
+    border-radius: 4px;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+  .badge-part { background: rgba(77,255,224,0.1); color: #4dffe0; }
+  .badge-full { background: rgba(180,255,77,0.1); color: #b4ff4d; }
+  .badge-temp { background: rgba(255,77,107,0.1); color: #ff4d6b; }
+  .badge-short { background: rgba(255,200,50,0.12); color: #ffd04d; border: 1px solid rgba(255,200,50,0.25); }
+
+  .td-status span {
+    font-size: 11px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .td-status .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .dot-active { background: var(--neon); }
+  .dot-inactive { background: var(--text-muted); }
+
+  .td-actions { display: flex; gap: 6px; }
+  .act-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 11px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif;
+    transition: all 0.15s;
+  }
+  .act-btn:hover { border-color: var(--neon); color: var(--neon); }
+  .act-btn.del:hover { border-color: var(--red); color: var(--red); }
+
+  /* VIEWS */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  @media (max-width: 768px) {
+    body { grid-template-columns: 1fr; grid-template-rows: 64px auto 1fr; }
+    .sidebar {
+      grid-row: 2;
+      border-right: none;
+      border-bottom: 1px solid var(--border);
+      padding: 16px;
+    }
+    .main { padding: 20px 16px; grid-row: 3; }
+    .form-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo">JOB<span>FLOW</span><span class="admin-tag">Admin</span></div>
+  <div class="topbar-right">
+    <div class="save-status"><span class="status-dot"></span><span id="saveStatusText">自動保存中</span></div>
+    <a href="jobs_viewer.html" class="preview-link" target="_blank">求人サイトを見る →</a>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <button class="new-job-btn" onclick="showView('form'); newJob()">＋ 新規求人を作成</button>
+
+  <div class="sidebar-section-label">統計</div>
+  <div class="stat-cards">
+    <div class="stat-card">
+      <div class="val" id="statTotal">0</div>
+      <div class="lbl">総求人数</div>
+    </div>
+    <div class="stat-card">
+      <div class="val" id="statActive">0</div>
+      <div class="lbl">公開中</div>
+    </div>
+  </div>
+
+  <div class="sidebar-section-label">求人リスト</div>
+  <div class="job-list-mini" id="sidebarJobList"></div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- LIST VIEW -->
+  <div class="view active" id="viewList">
+    <div class="main-header">
+      <div>
+        <div class="main-title">求人管理</div>
+        <div class="main-subtitle">登録されている全求人を確認・編集できます</div>
+      </div>
+      <div class="form-actions">
+        <button class="btn-primary" onclick="showView('form'); newJob()">＋ 新規作成</button>
+      </div>
+    </div>
+
+    <div class="jobs-table-wrap">
+      <div class="table-toolbar">
+        <input type="text" class="table-search" placeholder="求人を検索..." oninput="renderTable(this.value)">
+        <span style="font-size:12px;color:var(--text-muted)" id="tableCount"></span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>求人タイトル</th>
+            <th>種別</th>
+            <th>時給</th>
+            <th>勤務地</th>
+            <th>締切日</th>
+            <th>ステータス</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="jobsTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- FORM VIEW -->
+  <div class="view" id="viewForm">
+    <div class="main-header">
+      <div>
+        <div class="main-title" id="formTitle">新規求人作成</div>
+        <div class="main-subtitle">求人情報を入力してサイトに公開しましょう</div>
+      </div>
+      <div class="form-actions">
+        <button class="btn-secondary" onclick="showView('list')">← 一覧に戻る</button>
+        <button class="btn-primary" onclick="saveJob()">保存して公開</button>
+      </div>
+    </div>
+
+    <!-- 基本情報 -->
+    <div class="form-section">
+      <div class="form-section-title">基本情報</div>
+      <div class="form-grid">
+        <div class="field form-full">
+          <label>求人タイトル <span class="required">*</span></label>
+          <input type="text" id="f-title" placeholder="例: カフェスタッフ・ホールスタッフ募集">
+        </div>
+        <div class="field">
+          <label>会社名・店舗名 <span class="required">*</span></label>
+          <input type="text" id="f-company" placeholder="例: Dolce Beauty Salon">
+        </div>
+        <div class="field">
+          <label>雇用形態 <span class="required">*</span></label>
+          <select id="f-type" onchange="toggleShortTermFields()">
+            <option value="パート">パート</option>
+            <option value="アルバイト">アルバイト</option>
+            <option value="正社員">正社員</option>
+            <option value="短期">短期</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>勤務地・エリア</label>
+          <select id="f-area">
+            <option value="">選択してください</option>
+            <option value="札幌市中央区">札幌市 中央区</option>
+            <option value="札幌市北区">札幌市 北区</option>
+            <option value="札幌市東区">札幌市 東区</option>
+            <option value="札幌市白石区">札幌市 白石区</option>
+            <option value="札幌市豊平区">札幌市 豊平区</option>
+            <option value="札幌市南区">札幌市 南区</option>
+            <option value="札幌市西区">札幌市 西区</option>
+            <option value="札幌市厚別区">札幌市 厚別区</option>
+            <option value="札幌市手稲区">札幌市 手稲区</option>
+            <option value="札幌市清田区">札幌市 清田区</option>
+            <option value="江別市">江別市</option>
+            <option value="千歳市">千歳市</option>
+            <option value="恵庭市">恵庭市</option>
+            <option value="北広島市">北広島市</option>
+            <option value="苫小牧市">苫小牧市</option>
+            <option value="岩見沢市">岩見沢市</option>
+            <option value="小樽市">小樽市</option>
+            <option value="石狩市">石狩市</option>
+            <option value="旭川市">旭川市</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>担当者名</label>
+          <input type="text" id="f-contact" placeholder="例: 田中">
+        </div>
+      </div>
+    </div>
+
+    <!-- 給与・時間 -->
+    <div class="form-section">
+      <div class="form-section-title">給与・勤務時間</div>
+      <div class="form-grid">
+        <div class="field">
+          <label>時給（円） <span class="required">*</span></label>
+          <input type="number" id="f-wage" placeholder="例: 1100" min="0">
+        </div>
+        <div class="field">
+          <label>勤務開始日</label>
+          <input type="date" id="f-startDate">
+        </div>
+        <div class="field">
+          <label>勤務時間帯</label>
+          <input type="text" id="f-shift" placeholder="例: 9:00〜18:00（応相談）">
+        </div>
+        <div class="field">
+          <label>勤務日数</label>
+          <input type="text" id="f-days" placeholder="例: 週3〜5日（応相談）">
+        </div>
+        <div class="field">
+          <label>募集締切日 <span style="font-size:10px;color:var(--text-muted);font-weight:400;letter-spacing:0">（この日まで掲載）</span></label>
+          <input type="date" id="f-deadline">
+          <span class="hint">設定すると締切日を過ぎた求人は自動的に非表示になります</span>
+        </div>
+        <div class="field" id="endDateField">
+          <label>勤務終了日 <span style="font-size:10px;color:var(--accent2);font-weight:400;letter-spacing:0">（短期の場合）</span></label>
+          <input type="date" id="f-endDate">
+          <span class="hint">短期の場合、いつまで働けるかを設定してください</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 仕事内容 -->
+    <div class="form-section">
+      <div class="form-section-title">仕事内容・詳細</div>
+      <div class="form-grid">
+        <div class="field form-full">
+          <label>仕事内容</label>
+          <textarea id="f-description" placeholder="仕事の内容を詳しく入力してください。
+
+例：
+・接客・レジ対応
+・商品の陳列・補充
+・清掃業務
+
+未経験大歓迎！丁寧に教えます。"></textarea>
+        </div>
+        <div class="field form-full">
+          <label>タグ・キーワード</label>
+          <input type="text" id="f-tags" placeholder="例: 未経験OK, 交通費支給, 社保完備（カンマ区切り）">
+          <span class="hint">求人カードに表示されるタグです。カンマ区切りで複数入力できます。</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 公開設定 -->
+    <div class="form-section">
+      <div class="form-section-title">公開設定</div>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-label">求人サイトに公開</div>
+          <div class="toggle-desc">ONにすると求人サイト（閲覧側）に表示されます</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="f-active" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="form-actions" style="justify-content:flex-end; gap:10px;">
+      <button class="btn-danger" id="deleteBtn" onclick="deleteJob()" style="display:none">この求人を削除</button>
+      <button class="btn-secondary" onclick="showView('list')">キャンセル</button>
+      <button class="btn-primary" onclick="saveJob()">✓ 保存して公開</button>
+    </div>
+  </div>
+
+</main>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+  const STORAGE_KEY = 'jobflow_jobs';
+  let jobs = [];
+  let editingId = null;
+
+  function loadJobs() {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) { jobs = []; return; }
+    try { jobs = JSON.parse(raw); } catch { jobs = []; }
+  }
+
+  function saveJobs() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(jobs));
+    updateStats();
+    renderSidebar();
+    renderTable();
+    showToast('保存しました ✓');
+  }
+
+  function updateStats() {
+    document.getElementById('statTotal').textContent = jobs.length;
+    document.getElementById('statActive').textContent = jobs.filter(j => j.active !== false).length;
+  }
+
+  function renderSidebar() {
+    const el = document.getElementById('sidebarJobList');
+    if (jobs.length === 0) {
+      el.innerHTML = '<div style="font-size:12px;color:var(--text-muted);padding:8px;text-align:center;">求人がありません</div>';
+      return;
+    }
+    el.innerHTML = jobs.map(j => `
+      <div class="job-mini-item ${editingId === j.id ? 'selected' : ''}" onclick="editJob('${j.id}')">
+        <span class="job-mini-title">${j.title || '（タイトルなし）'}</span>
+        <span class="mini-status ${j.active !== false ? 'active' : 'inactive'}"></span>
+      </div>
+    `).join('');
+  }
+
+  function renderTable(query = '') {
+    const q = query.toLowerCase();
+    const filtered = jobs.filter(j =>
+      !q || j.title.toLowerCase().includes(q) || j.company.toLowerCase().includes(q) || (j.area || '').toLowerCase().includes(q)
+    );
+    document.getElementById('tableCount').textContent = filtered.length + '件';
+    const tbody = document.getElementById('jobsTableBody');
+    if (filtered.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted);">求人が登録されていません</td></tr>`;
+      return;
+    }
+    const badgeMap = { '正社員': 'badge-full', 'アルバイト': 'badge-temp', 'パート': 'badge-part', '短期': 'badge-short' };
+    tbody.innerHTML = filtered.map(j => `
+      <tr onclick="editJob('${j.id}')">
+        <td>
+          <div class="td-title">${j.title || '—'}</div>
+          <div class="td-company">${j.company || '—'}</div>
+        </td>
+        <td class="td-type"><span class="${badgeMap[j.type] || ''}">${j.type || '—'}</span></td>
+        <td class="td-wage">¥${Number(j.wage || 0).toLocaleString()}<span style="font-size:11px;font-weight:400;color:var(--text-muted)">/時</span></td>
+        <td style="color:var(--text-sub);font-size:12px">${j.area || '—'}</td>
+        <td style="font-size:12px">${renderDeadlineCell(j)}</td>
+        <td class="td-status"><span><span class="dot ${j.active !== false ? 'dot-active' : 'dot-inactive'}"></span>${j.active !== false ? '公開中' : '非公開'}</span></td>
+        <td class="td-actions" onclick="event.stopPropagation()">
+          <button class="act-btn" onclick="editJob('${j.id}')">編集</button>
+          <button class="act-btn del" onclick="deleteJobById('${j.id}')">削除</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function showView(v) {
+    document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+    document.getElementById(v === 'form' ? 'viewForm' : 'viewList').classList.add('active');
+  }
+
+  function newJob() {
+    editingId = null;
+    document.getElementById('formTitle').textContent = '新規求人作成';
+    document.getElementById('deleteBtn').style.display = 'none';
+    clearForm();
+    renderSidebar();
+  }
+
+  function clearForm() {
+    ['f-title','f-company','f-area','f-contact','f-wage','f-startDate','f-endDate','f-deadline','f-shift','f-days','f-description','f-tags'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    document.getElementById('f-type').value = 'パート';
+    document.getElementById('f-active').checked = true;
+    toggleShortTermFields();
+  }
+
+  function editJob(id) {
+    const job = jobs.find(j => j.id === id);
+    if (!job) return;
+    editingId = id;
+    document.getElementById('formTitle').textContent = '求人を編集';
+    document.getElementById('deleteBtn').style.display = 'inline-flex';
+
+    document.getElementById('f-title').value = job.title || '';
+    document.getElementById('f-company').value = job.company || '';
+    document.getElementById('f-type').value = job.type || 'パート';
+    const areaEl = document.getElementById('f-area');
+    areaEl.value = job.area || '';
+    if(!areaEl.value && job.area) {
+      // fallback: add custom option if not in list
+      const opt = document.createElement('option');
+      opt.value = job.area; opt.textContent = job.area;
+      areaEl.appendChild(opt); areaEl.value = job.area;
+    }
+    document.getElementById('f-contact').value = job.contact || '';
+    document.getElementById('f-wage').value = job.wage || '';
+    document.getElementById('f-startDate').value = job.startDate || '';
+    document.getElementById('f-shift').value = job.shift || '';
+    document.getElementById('f-days').value = job.days || '';
+    document.getElementById('f-deadline').value = job.deadline || '';
+    document.getElementById('f-endDate').value = job.endDate || '';
+    document.getElementById('f-description').value = job.description || '';
+    document.getElementById('f-tags').value = job.tags || '';
+    document.getElementById('f-active').checked = job.active !== false;
+    toggleShortTermFields();
+
+    showView('form');
+    renderSidebar();
+  }
+
+  function saveJob() {
+    const title = document.getElementById('f-title').value.trim();
+    const company = document.getElementById('f-company').value.trim();
+    const wage = document.getElementById('f-wage').value.trim();
+    if (!title || !company || !wage) {
+      showToast('⚠️ タイトル・会社名・時給は必須です', true);
+      return;
+    }
+
+    const jobData = {
+      id: editingId || 'job_' + Date.now(),
+      title,
+      company,
+      type: document.getElementById('f-type').value,
+      area: document.getElementById('f-area').value.trim(),
+      contact: document.getElementById('f-contact').value.trim(),
+      wage: Number(wage),
+      startDate: document.getElementById('f-startDate').value,
+      shift: document.getElementById('f-shift').value.trim(),
+      days: document.getElementById('f-days').value.trim(),
+      deadline: document.getElementById('f-deadline').value,
+      endDate: document.getElementById('f-endDate').value,
+      description: document.getElementById('f-description').value.trim(),
+      tags: document.getElementById('f-tags').value.trim(),
+      active: document.getElementById('f-active').checked,
+      createdAt: editingId ? (jobs.find(j => j.id === editingId)?.createdAt || new Date().toISOString()) : new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    if (editingId) {
+      const idx = jobs.findIndex(j => j.id === editingId);
+      if (idx !== -1) jobs[idx] = jobData;
+    } else {
+      jobs.unshift(jobData);
+      editingId = jobData.id;
+    }
+
+    document.getElementById('formTitle').textContent = '求人を編集';
+    document.getElementById('deleteBtn').style.display = 'inline-flex';
+    saveJobs();
+  }
+
+  function renderDeadlineCell(j) {
+    const d = j.deadline || j.endDate;
+    if (!d) return '<span style="color:var(--text-muted)">—</span>';
+    const days = Math.ceil((new Date(d) - new Date()) / 864e5);
+    if (days < 0) return '<span style="color:var(--red)">期限切れ</span>';
+    if (days === 0) return '<span style="color:var(--red);font-weight:600">本日締切</span>';
+    if (days <= 3) return `<span style="color:#ffd04d;font-weight:600">残${days}日</span>`;
+    return `<span style="color:var(--text-sub)">${d} <span style="color:var(--text-muted)">(残${days}日)</span></span>`;
+  }
+
+  function toggleShortTermFields() {
+    const isShort = document.getElementById('f-type').value === '短期';
+    const el = document.getElementById('endDateField');
+    if (el) el.style.opacity = isShort ? '1' : '0.4';
+  }
+
+  function deleteJob() {
+    if (!editingId) return;
+    deleteJobById(editingId);
+  }
+
+  function deleteJobById(id) {
+    if (!confirm('この求人を削除しますか？')) return;
+    jobs = jobs.filter(j => j.id !== id);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(jobs));
+    updateStats();
+    renderSidebar();
+    renderTable();
+    showToast('削除しました');
+    if (editingId === id) {
+      editingId = null;
+      showView('list');
+    }
+  }
+
+  function showToast(msg, isError = false) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.borderColor = isError ? 'var(--red)' : 'var(--neon)';
+    t.style.boxShadow = isError ? '0 0 24px rgba(255,77,107,0.25)' : 'var(--neon-glow)';
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  // DEMO DATA for first time
+  function seedDemo() {
+    if (localStorage.getItem(STORAGE_KEY)) return;
+    const demo = [
+      {
+        id: 'demo1',
+        title: 'ヘアサロン アシスタントスタッフ',
+        company: 'Dolce Beauty Salon',
+        type: 'パート',
+        area: '札幌市中央区',
+        contact: '田中',
+        wage: 1200,
+        shift: '10:00〜20:00（シフト制）',
+        days: '週3日〜OK',
+        startDate: '2026-07-01',
+        description: '・お客様のシャンプー・ブロー補助\n・店内清掃、備品管理\n・受付・電話対応\n\n未経験でも丁寧に指導します！美容に興味がある方大歓迎です。',
+        tags: '未経験OK,美容師免許不要,交通費支給',
+        active: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      {
+        id: 'demo2',
+        title: 'カフェ・バリスタスタッフ',
+        company: 'ROAST COFFEE',
+        type: 'アルバイト',
+        area: '札幌市豊平区',
+        contact: '鈴木',
+        wage: 1050,
+        shift: '7:00〜15:00 または 13:00〜21:00',
+        days: '週2日〜',
+        startDate: '2026-06-30',
+        description: '・コーヒーの抽出・ドリンク作成\n・接客・レジ対応\n・店内清掃\n\nバリスタ経験があれば優遇します。コーヒー好き歓迎！',
+        tags: 'バリスタ優遇,まかない有,週2〜OK',
+        active: true,
+        createdAt: new Date(Date.now() - 86400000).toISOString(),
+        updatedAt: new Date().toISOString(),
+      }
+    ];
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(demo));
+  }
+
+  seedDemo();
+  loadJobs();
+  updateStats();
+  renderSidebar();
+  renderTable();
+</script>
+</body>
+</html>
