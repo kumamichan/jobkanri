@@ -81,6 +81,145 @@
   }
   .preview-link:hover { border-color: var(--neon); color: var(--neon); }
 
+  .settings-btn {
+    font-size: 12px;
+    color: var(--text-sub);
+    background: transparent;
+    border: 1px solid var(--border);
+    padding: 7px 14px;
+    border-radius: 6px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+  }
+  .settings-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+
+  /* 連携設定モーダル */
+  .settings-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.88); backdrop-filter: blur(14px);
+    z-index: 400; align-items: flex-start; justify-content: flex-end;
+    padding: 80px 24px 24px;
+  }
+  .settings-overlay.open { display: flex; }
+
+  .settings-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    width: 480px;
+    max-height: calc(100vh - 104px);
+    overflow-y: auto;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+    animation: slideDown 0.22s ease;
+  }
+  @keyframes slideDown { from { opacity:0; transform:translateY(-12px); } to { opacity:1; transform:translateY(0); } }
+
+  .settings-header {
+    padding: 24px 24px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .settings-header-left {}
+  .settings-header-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 16px; font-weight: 700; letter-spacing: -0.3px; margin-bottom: 3px;
+  }
+  .settings-header-sub { font-size: 11px; color: var(--text-muted); }
+
+  .settings-close {
+    background: var(--surface2); border: 1px solid var(--border); color: var(--text-muted);
+    width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 14px;
+    display: flex; align-items: center; justify-content: center; transition: all .2s; flex-shrink: 0;
+  }
+  .settings-close:hover { border-color: var(--neon); color: var(--neon); }
+
+  .settings-body { padding: 24px; }
+
+  /* LINE接続ステータスカード */
+  .line-status-card {
+    border-radius: 10px; padding: 16px 18px; margin-bottom: 24px;
+    display: flex; align-items: center; gap: 14px;
+    border: 1px solid var(--border);
+  }
+  .line-status-card.connected {
+    background: rgba(6,199,85,0.08); border-color: rgba(6,199,85,0.3);
+  }
+  .line-status-card.disconnected {
+    background: var(--surface2); border-color: var(--border);
+  }
+  .line-status-icon { font-size: 28px; flex-shrink: 0; }
+  .line-status-info {}
+  .line-status-label {
+    font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 700; margin-bottom: 2px;
+  }
+  .line-status-label.connected { color: #06C755; }
+  .line-status-label.disconnected { color: var(--text-muted); }
+  .line-status-desc { font-size: 11px; color: var(--text-muted); line-height: 1.5; }
+
+  .settings-section-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 1.8px; text-transform: uppercase;
+    color: var(--text-muted); font-family: 'Space Grotesk', sans-serif;
+    margin-bottom: 14px; margin-top: 4px;
+  }
+
+  .settings-field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 16px; }
+  .settings-field label {
+    font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--text-muted); font-family: 'Space Grotesk', sans-serif;
+  }
+  .settings-field label .req { color: var(--neon); margin-left: 3px; }
+  .settings-field input {
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text); font-family: 'Inter', sans-serif; font-size: 13px;
+    padding: 11px 13px; border-radius: 8px; outline: none;
+    transition: border-color .2s, box-shadow .2s; width: 100%;
+  }
+  .settings-field input:focus { border-color: var(--neon); box-shadow: 0 0 0 3px rgba(180,255,77,.07); }
+  .settings-field input::placeholder { color: var(--text-muted); }
+  .settings-field .sh { font-size: 11px; color: var(--text-muted); line-height: 1.55; }
+
+  .settings-divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+  .settings-save-btn {
+    width: 100%; background: var(--neon); color: #000;
+    font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 700;
+    border: none; padding: 13px; border-radius: 9px; cursor: pointer;
+    letter-spacing: .5px; transition: all .2s; margin-bottom: 10px;
+  }
+  .settings-save-btn:hover { box-shadow: var(--neon-glow); transform: translateY(-1px); }
+
+  .settings-reset-btn {
+    width: 100%; background: transparent; color: var(--text-muted);
+    font-family: 'Space Grotesk', sans-serif; font-size: 11px; font-weight: 500;
+    border: 1px solid var(--border); padding: 9px; border-radius: 9px; cursor: pointer;
+    transition: all .2s;
+  }
+  .settings-reset-btn:hover { border-color: var(--red); color: var(--red); }
+
+  /* GASコードブロック */
+  .gas-code-wrap {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px; margin-top: 20px;
+  }
+  .gas-code-header {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;
+  }
+  .gas-code-title { font-size: 11px; font-weight: 700; letter-spacing: 1px; color: var(--text-muted); font-family: 'Space Grotesk', sans-serif; text-transform: uppercase; }
+  .gas-copy-btn {
+    background: transparent; border: 1px solid var(--border); color: var(--text-muted);
+    font-size: 10px; font-weight: 600; padding: 4px 10px; border-radius: 5px; cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif; transition: all .15s;
+  }
+  .gas-copy-btn:hover { border-color: var(--neon); color: var(--neon); }
+  pre.gas-code {
+    font-size: 10.5px; color: #c8ff6e; line-height: 1.7;
+    overflow-x: auto; white-space: pre-wrap; word-break: break-all;
+    max-height: 260px; overflow-y: auto;
+  }
+
   .save-status {
     font-size: 11px;
     color: var(--text-muted);
@@ -536,6 +675,8 @@
   <div class="logo">JOB<span>FLOW</span><span class="admin-tag">Admin</span></div>
   <div class="topbar-right">
     <div class="save-status"><span class="status-dot"></span><span id="saveStatusText">自動保存中</span></div>
+    <div id="lineStatusBadge" style="display:none;align-items:center;gap:6px;font-size:11px;font-family:'Space Grotesk',sans-serif;"></div>
+    <button class="settings-btn" onclick="openSettings()">⚙️ 連携設定</button>
     <a href="jobs_viewer.html" class="preview-link" target="_blank">求人サイトを見る →</a>
   </div>
 </div>
@@ -606,7 +747,6 @@
       </div>
       <div class="form-actions">
         <button class="btn-secondary" onclick="showView('list')">← 一覧に戻る</button>
-        <button class="btn-primary" onclick="saveJob()">保存して公開</button>
       </div>
     </div>
 
@@ -737,11 +877,75 @@
     <div class="form-actions" style="justify-content:flex-end; gap:10px;">
       <button class="btn-danger" id="deleteBtn" onclick="deleteJob()" style="display:none">この求人を削除</button>
       <button class="btn-secondary" onclick="showView('list')">キャンセル</button>
-      <button class="btn-primary" onclick="saveJob()">✓ 保存して公開</button>
+      <button class="btn-secondary" onclick="saveJob(false)">非公開で保存</button>
+      <button class="btn-primary" onclick="saveJob(true)">✓ 公開して保存</button>
     </div>
   </div>
 
 </main>
+
+<!-- 連携設定モーダル -->
+<div class="settings-overlay" id="settingsOverlay" onclick="closeSettingsOutside(event)">
+  <div class="settings-panel" id="settingsPanel">
+    <div class="settings-header">
+      <div class="settings-header-left">
+        <div class="settings-header-title">⚙️ 連携設定</div>
+        <div class="settings-header-sub">一度設定すれば全求人に自動適用されます</div>
+      </div>
+      <button class="settings-close" onclick="closeSettings()">✕</button>
+    </div>
+    <div class="settings-body">
+
+      <!-- 接続ステータス -->
+      <div class="line-status-card disconnected" id="lineStatusCard">
+        <div class="line-status-icon">💬</div>
+        <div class="line-status-info">
+          <div class="line-status-label disconnected" id="lineStatusLabel">未接続</div>
+          <div class="line-status-desc" id="lineStatusDesc">以下の情報を入力してLINEと連携してください</div>
+        </div>
+      </div>
+
+      <div class="settings-section-label">LINE 公式アカウント</div>
+
+      <div class="settings-field">
+        <label>公式アカウント ID <span class="req">*</span></label>
+        <input type="text" id="s-lineId" placeholder="例: @abc1234d">
+        <span class="sh">LINE公式アカウントのID（@から始まる文字列）。応募完了画面にLINEボタンが表示されます。</span>
+      </div>
+
+      <div class="settings-field">
+        <label>LINE Notify トークン <span class="req">*</span></label>
+        <input type="text" id="s-lineToken" placeholder="LINE Notifyで発行したトークンを貼り付け">
+        <span class="sh">
+          <a href="https://notify-bot.line.me/ja/" target="_blank" style="color:var(--neon);text-decoration:none;">notify-bot.line.me</a> でトークンを発行し、GASコードに入力して使います。
+        </span>
+      </div>
+
+      <div class="settings-divider"></div>
+      <div class="settings-section-label">GAS Webhook</div>
+
+      <div class="settings-field">
+        <label>Webhook URL</label>
+        <input type="url" id="s-gasUrl" placeholder="https://script.google.com/macros/s/xxxxx/exec">
+        <span class="sh">GASをデプロイ後に発行されるURL。設定するとフォーム送信内容がLINEに届きます。</span>
+      </div>
+
+      <!-- GASコード -->
+      <div class="gas-code-wrap">
+        <div class="gas-code-header">
+          <span class="gas-code-title">📋 GASコード（コピーして使用）</span>
+          <button class="gas-copy-btn" onclick="copyGasCode()">コピー</button>
+        </div>
+        <pre class="gas-code" id="gasCodeBlock"></pre>
+      </div>
+
+      <div style="margin-top:20px;"></div>
+      <button class="settings-save-btn" onclick="saveSettings()">✓ 設定を保存する</button>
+      <button class="settings-reset-btn" onclick="resetSettings()">接続をリセット</button>
+
+    </div>
+  </div>
+</div>
 
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
@@ -757,12 +961,13 @@
     try { jobs = JSON.parse(raw); } catch { jobs = []; }
   }
 
-  function saveJobs() {
+  function saveJobs(isPublic) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(jobs));
     updateStats();
     renderSidebar();
     renderTable();
-    showToast('保存しました ✓');
+    const msg = isPublic === false ? '非公開で保存しました' : '公開して保存しました ✓';
+    showToast(msg);
   }
 
   function updateStats() {
@@ -872,7 +1077,7 @@
     renderSidebar();
   }
 
-  function saveJob() {
+  function saveJob(publish) {
     const title = document.getElementById('f-title').value.trim();
     const company = document.getElementById('f-company').value.trim();
     const wage = document.getElementById('f-wage').value.trim();
@@ -896,10 +1101,15 @@
       endDate: document.getElementById('f-endDate').value,
       description: document.getElementById('f-description').value.trim(),
       tags: document.getElementById('f-tags').value.trim(),
-      active: document.getElementById('f-active').checked,
+      active: typeof publish === 'boolean' ? publish : document.getElementById('f-active').checked,
       createdAt: editingId ? (jobs.find(j => j.id === editingId)?.createdAt || new Date().toISOString()) : new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
+
+    // トグルの表示も同期
+    if (typeof publish === 'boolean') {
+      document.getElementById('f-active').checked = publish;
+    }
 
     if (editingId) {
       const idx = jobs.findIndex(j => j.id === editingId);
@@ -911,7 +1121,7 @@
 
     document.getElementById('formTitle').textContent = '求人を編集';
     document.getElementById('deleteBtn').style.display = 'inline-flex';
-    saveJobs();
+    saveJobs(publish);
   }
 
   function renderDeadlineCell(j) {
@@ -958,7 +1168,140 @@
     setTimeout(() => t.classList.remove('show'), 2500);
   }
 
-  // DEMO DATA for first time
+  // ── LINE・GAS 連携設定 ────────────────────────
+  const SETTINGS_KEY = 'jobflow_settings';
+
+  function getSettings() {
+    try { return JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}'); } catch { return {}; }
+  }
+
+  function openSettings() {
+    const s = getSettings();
+    document.getElementById('s-lineId').value    = s.lineId    || '';
+    document.getElementById('s-lineToken').value = s.lineToken || '';
+    document.getElementById('s-gasUrl').value    = s.gasUrl    || '';
+    updateSettingsStatus(s);
+    renderGasCode(s.lineToken || '');
+    document.getElementById('settingsOverlay').classList.add('open');
+  }
+
+  function closeSettings() {
+    document.getElementById('settingsOverlay').classList.remove('open');
+  }
+
+  function closeSettingsOutside(e) {
+    if (e.target === document.getElementById('settingsOverlay')) closeSettings();
+  }
+
+  function saveSettings() {
+    const s = {
+      lineId:    document.getElementById('s-lineId').value.trim(),
+      lineToken: document.getElementById('s-lineToken').value.trim(),
+      gasUrl:    document.getElementById('s-gasUrl').value.trim(),
+    };
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+    updateSettingsStatus(s);
+    renderGasCode(s.lineToken);
+    updateTopbarBadge(s);
+    showToast('連携設定を保存しました ✓');
+  }
+
+  function resetSettings() {
+    if (!confirm('連携設定をリセットしますか？')) return;
+    localStorage.removeItem(SETTINGS_KEY);
+    document.getElementById('s-lineId').value = '';
+    document.getElementById('s-lineToken').value = '';
+    document.getElementById('s-gasUrl').value = '';
+    updateSettingsStatus({});
+    renderGasCode('');
+    updateTopbarBadge({});
+    showToast('設定をリセットしました');
+  }
+
+  function updateSettingsStatus(s) {
+    const connected = !!(s.lineId && s.lineToken);
+    const card  = document.getElementById('lineStatusCard');
+    const label = document.getElementById('lineStatusLabel');
+    const desc  = document.getElementById('lineStatusDesc');
+    if (connected) {
+      card.className  = 'line-status-card connected';
+      label.className = 'line-status-label connected';
+      label.textContent = '✓ LINE接続済み';
+      desc.textContent  = '公式アカウント: ' + s.lineId + ' に連携中';
+    } else {
+      card.className  = 'line-status-card disconnected';
+      label.className = 'line-status-label disconnected';
+      label.textContent = '未接続';
+      desc.textContent  = '以下の情報を入力してLINEと連携してください';
+    }
+  }
+
+  function updateTopbarBadge(s) {
+    const badge = document.getElementById('lineStatusBadge');
+    if (s.lineId && s.lineToken) {
+      badge.style.display = 'flex';
+      badge.innerHTML = `<span style="width:7px;height:7px;border-radius:50%;background:#06C755;display:inline-block;"></span><span style="color:#06C755;">LINE接続済み</span>`;
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+
+  function renderGasCode(token) {
+    const t = token || 'YOUR_LINE_NOTIFY_TOKEN';
+    const code = `// ★ GAS（Google Apps Script）にコピペしてデプロイ
+const LINE_NOTIFY_TOKEN = '${t}';
+
+function doPost(e) {
+  try {
+    const d = JSON.parse(e.postData.contents);
+    const msg = [
+      '\\n【新しい応募が届きました！】',
+      '━━━━━━━━━━━━',
+      '📋 求人：' + d.jobTitle,
+      '🏢 会社：' + d.company,
+      '━━━━━━━━━━━━',
+      '👤 氏名：' + d.name,
+      '📞 電話：' + d.phone,
+      d.age      ? '🎂 年齢：' + d.age          : '',
+      d.schedule ? '🕐 希望：' + d.schedule      : '',
+      d.message  ? '💬 一言：\\n' + d.message    : '',
+      '━━━━━━━━━━━━',
+      '🕑 ' + d.sentAt,
+    ].filter(Boolean).join('\\n');
+
+    UrlFetchApp.fetch(
+      'https://notify-api.line.me/api/notify',
+      {
+        method: 'post',
+        headers: { Authorization: 'Bearer ' + LINE_NOTIFY_TOKEN },
+        payload: { message: msg }
+      }
+    );
+    return ContentService
+      .createTextOutput(JSON.stringify({status:'ok'}))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch(err) {
+    return ContentService
+      .createTextOutput(JSON.stringify({status:'error',msg:err.toString()}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}`;
+    const el = document.getElementById('gasCodeBlock');
+    if (el) el.textContent = code;
+  }
+
+  function copyGasCode() {
+    const code = document.getElementById('gasCodeBlock').textContent;
+    navigator.clipboard.writeText(code).then(() => showToast('GASコードをコピーしました ✓'));
+  }
+
+  function loadLineSettings() {
+    const s = getSettings();
+    updateTopbarBadge(s);
+    renderGasCode(s.lineToken || '');
+  }
+
+  // ── DEMO DATA ────────────────────────────────
   function seedDemo() {
     if (localStorage.getItem(STORAGE_KEY)) return;
     const demo = [
@@ -1002,6 +1345,7 @@
 
   seedDemo();
   loadJobs();
+  loadLineSettings();
   updateStats();
   renderSidebar();
   renderTable();
