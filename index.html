@@ -208,12 +208,7 @@
   .sf2 .sh { font-size:11px; color:var(--text-mute); line-height:1.55; }
 
   /* GASコード */
-  .gas-box { background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:14px; margin-top:18px; }
-  .gas-box-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
-  .gas-box-title { font-size:11px; font-weight:700; color:var(--text-mute); }
-  .gas-copy-btn { background:transparent; border:1px solid var(--border2); color:var(--text-mute); font-size:10px; font-weight:700; padding:4px 10px; border-radius:5px; cursor:pointer; font-family:'Noto Sans JP',sans-serif; transition:all .15s; }
-  .gas-copy-btn:hover { border-color:var(--blue); color:var(--blue-l); }
-  pre.gas-code { font-size:10px; color:#7fffb0; line-height:1.75; overflow-x:auto; white-space:pre-wrap; word-break:break-all; max-height:260px; overflow-y:auto; }
+
 
   .set-save-btn { width:100%; background:var(--green); color:#fff; font-family:'Noto Sans JP',sans-serif; font-size:13px; font-weight:700; border:none; padding:13px; border-radius:9px; cursor:pointer; transition:background .2s; margin-bottom:8px; margin-top:18px; }
   .set-save-btn:hover { background:var(--green-l); }
@@ -661,15 +656,6 @@
         <span class="sh">GASをデプロイして発行されたURLを貼り付けてください。メール送信と応募記録が自動で動きます。</span>
       </div>
 
-      <!-- GASコード -->
-      <div class="gas-box">
-        <div class="gas-box-head">
-          <span class="gas-box-title">📋 GASにコピペするコード</span>
-          <button class="gas-copy-btn" onclick="copyGas()">コピーする</button>
-        </div>
-        <pre class="gas-code" id="gasCode"></pre>
-      </div>
-
       <button class="set-save-btn" onclick="saveSettings()">✓ 設定を保存する</button>
       <button class="set-reset-btn" onclick="resetSettings()">設定をリセットする</button>
     </div>
@@ -861,7 +847,7 @@
     };
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
     updateMscCard(s);
-    renderGasCode(s.adminEmail, s.sheetId);
+
     updateTopBadge(s);
     showToast('連携設定を保存しました ✓');
   }
@@ -873,7 +859,7 @@
     document.getElementById('s-sheetId').value    = '';
     document.getElementById('s-gasUrl').value     = '';
     updateMscCard({});
-    renderGasCode('', '');
+
     updateTopBadge({});
     showToast('設定をリセットしました');
   }
@@ -902,144 +888,13 @@
     document.getElementById('s-sheetId').value    = s.sheetId    || '';
     document.getElementById('s-gasUrl').value     = s.gasUrl     || '';
     updateMscCard(s);
-    renderGasCode(s.adminEmail || '', s.sheetId || '');
+
     document.getElementById('setOverlay').classList.add('open');
   }
 
-  function renderGasCode(adminEmail, sheetId) {
-    const ae = adminEmail || 'YOUR_ADMIN_EMAIL@example.com';
-    const si = sheetId   || 'YOUR_SPREADSHEET_ID';
-    document.getElementById('gasCode').textContent =
-`// ★ Google Apps Scriptにコピペしてデプロイしてください
-// ─────────────────────────────────────────
-// 【設定】ここだけ書き換えてください
-const ADMIN_EMAIL    = '${ae}';
-const SPREADSHEET_ID = '${si}';
-const SHEET_NAME     = '応募履歴';
-// ─────────────────────────────────────────
 
-// ── GET：応募者一覧を返す ────────────────
-function doGet(e) {
-  try {
-    const action = e.parameter.action;
-    if (action === 'getApplicants') {
-      const ss    = SpreadsheetApp.openById(SPREADSHEET_ID);
-      const sheet = ss.getSheetByName(SHEET_NAME);
-      if (!sheet) {
-        return output({ status: 'ok', rows: [] });
-      }
-      const rows = sheet.getDataRange().getValues();
-      rows.shift(); // ヘッダー行を除く
-      return output({ status: 'ok', rows: rows });
-    }
-    return output({ status: 'error', msg: 'unknown action' });
-  } catch(err) {
-    return output({ status: 'error', msg: err.toString() });
-  }
-}
 
-// ── POST：応募受付 or 採用情報更新 ──────
-function doPost(e) {
-  try {
-    const d = JSON.parse(e.postData.contents);
 
-    // 採用情報の更新リクエスト
-    if (d.action === 'updateApplicant') {
-      const ss    = SpreadsheetApp.openById(SPREADSHEET_ID);
-      const sheet = ss.getSheetByName(SHEET_NAME);
-      if (!sheet) return output({ status: 'error', msg: 'シートが見つかりません' });
-      const row = Number(d.row);
-      sheet.getRange(row, 12).setValue(d.itvDate  || '');       // 面接日時
-      sheet.getRange(row, 13).setValue(d.empType  || '');       // 採用後の雇用形式
-      sheet.getRange(row, 14).setValue(d.wageType || '');       // 給与形態
-      sheet.getRange(row, 15).setValue(d.wageAmt  || '');       // 金額
-      sheet.getRange(row, 16).setValue(d.status   || '未対応'); // 採用結果
-      sheet.getRange(row, 17).setValue(d.note     || '');       // 備考
-      return output({ status: 'ok' });
-    }
-
-    // 新規応募の受付
-    const ss    = SpreadsheetApp.openById(SPREADSHEET_ID);
-    let   sheet = ss.getSheetByName(SHEET_NAME);
-
-    if (!sheet) {
-      sheet = ss.insertSheet(SHEET_NAME);
-      sheet.appendRow([
-        '応募日時','求人名','会社名','エリア','時給',
-        'お名前','電話番号','メールアドレス','年齢',
-        '希望勤務日・時間帯','メッセージ',
-        '面接日時','採用後の雇用形式','給与形態','金額（円）','採用結果','備考'
-      ]);
-      const h = sheet.getRange(1, 1, 1, 17);
-      h.setFontWeight('bold').setFontColor('#ffffff');
-      sheet.getRange(1,1,1,11).setBackground('#1a3052');
-      sheet.getRange(1,12,1,6).setBackground('#1e4d2b');
-      sheet.setColumnWidths(1,17,130);
-      sheet.setColumnWidth(2,180); sheet.setColumnWidth(8,200); sheet.setColumnWidth(11,200);
-      const rule = SpreadsheetApp.newDataValidation()
-        .requireValueInList(['未対応','面接調整中','面接済み','採用','不採用','保留'],true).build();
-      sheet.getRange(2,16,1000,1).setDataValidation(rule);
-      const empRule = SpreadsheetApp.newDataValidation()
-        .requireValueInList(['正社員','パート','アルバイト','短期','業務委託'],true).build();
-      sheet.getRange(2,13,1000,1).setDataValidation(empRule);
-      const wageRule = SpreadsheetApp.newDataValidation()
-        .requireValueInList(['時給','日給','月給'],true).build();
-      sheet.getRange(2,14,1000,1).setDataValidation(wageRule);
-      sheet.setFrozenRows(1);
-    }
-
-    sheet.appendRow([
-      d.sentAt, d.jobTitle, d.company, d.area||'—',
-      d.wage ? '¥'+d.wage+'/時' : '—',
-      d.name, d.phone, d.email||'—', d.age||'—',
-      d.schedule||'—', d.message||'—',
-      '', '', '', '', '未対応', ''
-    ]);
-
-    const body = [
-      '新しい応募が届きました！','',
-      '【求人情報】',
-      '求人名：'+d.jobTitle, '会社名：'+d.company, 'エリア：'+(d.area||'—'),
-      '時給：'+(d.wage?'¥'+d.wage+'/時':'—'),'',
-      '【応募者情報】',
-      'お名前：'+d.name, '電話番号：'+d.phone,
-      'メールアドレス：'+(d.email||'—'), '年齢：'+(d.age||'—'),
-      '希望勤務：'+(d.schedule||'—'), 'メッセージ：'+(d.message||'—'),'',
-      '送信日時：'+d.sentAt,'',
-      '※ 応募履歴はスプレッドシートに自動記録されています。',
-    ].join('\\n');
-
-    const subject = '【求人応募】'+d.jobTitle+' に応募がありました';
-    GmailApp.sendEmail(ADMIN_EMAIL, subject, body);
-    if (d.contactEmail) GmailApp.sendEmail(d.contactEmail, subject, body);
-    if (d.email) {
-      GmailApp.sendEmail(d.email,
-        '【応募受付】'+d.jobTitle+' へのご応募ありがとうございます',
-        [d.name+' 様','',
-         '「'+d.jobTitle+'」にご応募いただきありがとうございます。','',
-         '応募内容を受け付けました。','担当者より順次ご連絡いたします。','',
-         '求人名：'+d.jobTitle,'会社名：'+d.company,'',
-         '※ このメールは自動送信です。返信はできません。'
-        ].join('\\n'));
-    }
-    return output({ status: 'ok' });
-
-  } catch(err) {
-    return output({ status: 'error', msg: err.toString() });
-  }
-}
-
-function output(obj) {
-  return ContentService
-    .createTextOutput(JSON.stringify(obj))
-    .setMimeType(ContentService.MimeType.JSON);
-}`;
-  }
-
-  function copyGas() {
-    navigator.clipboard.writeText(document.getElementById('gasCode').textContent)
-      .then(() => showToast('GASコードをコピーしました ✓'));
-  }
 
   // デモデータ（初回のみ）
   function seedDemo() {
@@ -1279,7 +1134,7 @@ function output(obj) {
     document.getElementById('s-sheetId').value    = s.sheetId    || '';
     document.getElementById('s-gasUrl').value     = s.gasUrl     || '';
     updateMscCard(s);
-    renderGasCode(s.adminEmail || '', s.sheetId || '');
+
     document.getElementById('setOverlay').classList.add('open');
   }
 
