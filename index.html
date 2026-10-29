@@ -231,6 +231,72 @@
     .fg { grid-template-columns:1fr; }
   }
 
+  /* 応募者管理 */
+  .applicant-toolbar { padding:14px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .appl-filter { background:var(--surface2); border:1px solid var(--border2); color:var(--text); font-family:'Noto Sans JP',sans-serif; font-size:13px; padding:8px 12px; border-radius:8px; outline:none; transition:border-color .2s; }
+  .appl-filter:focus { border-color:var(--blue); }
+  .appl-filter option { background:var(--surface2); }
+  .reload-btn { background:var(--blue-bg); border:1px solid rgba(61,142,240,0.35); color:var(--blue-l); font-family:'Noto Sans JP',sans-serif; font-size:12px; font-weight:700; padding:8px 14px; border-radius:8px; cursor:pointer; transition:all .2s; }
+  .reload-btn:hover { background:rgba(61,142,240,0.22); }
+  .appl-count { font-size:12px; color:var(--text-mute); margin-left:auto; }
+
+  .appl-cards { display:grid; gap:12px; padding:18px; }
+  .appl-card {
+    background:var(--surface2); border:1px solid var(--border);
+    border-radius:12px; padding:18px 20px;
+    display:grid; grid-template-columns:1fr auto; gap:14px; align-items:start;
+    transition:border-color .2s;
+  }
+  .appl-card:hover { border-color:var(--border2); }
+  .appl-card.status-採用    { border-left:3px solid var(--green); }
+  .appl-card.status-不採用  { border-left:3px solid var(--red); }
+  .appl-card.status-面接調整中 { border-left:3px solid var(--blue); }
+  .appl-card.status-面接済み  { border-left:3px solid var(--yellow); }
+  .appl-card.status-保留    { border-left:3px solid var(--text-mute); }
+  .appl-card.status-未対応  { border-left:3px solid var(--border2); }
+
+  .appl-name  { font-size:16px; font-weight:900; margin-bottom:3px; }
+  .appl-job   { font-size:12px; color:var(--blue-l); margin-bottom:8px; font-weight:700; }
+  .appl-meta  { display:flex; flex-wrap:wrap; gap:10px; font-size:12px; color:var(--text-mid); margin-bottom:12px; }
+  .appl-meta span { display:flex; align-items:center; gap:4px; }
+  .appl-msg   { font-size:12px; color:var(--text-mute); line-height:1.65; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:10px 12px; margin-bottom:14px; white-space:pre-wrap; }
+
+  .appl-edit-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .appl-field { display:flex; flex-direction:column; gap:5px; }
+  .appl-field label { font-size:10px; font-weight:700; color:var(--text-mute); letter-spacing:0.5px; }
+  .appl-field input, .appl-field select, .appl-field textarea {
+    background:var(--surface); border:1px solid var(--border2);
+    color:var(--text); font-family:'Noto Sans JP',sans-serif; font-size:13px;
+    padding:9px 11px; border-radius:8px; outline:none; transition:border-color .2s; width:100%;
+  }
+  .appl-field input:focus, .appl-field select:focus, .appl-field textarea:focus { border-color:var(--blue); }
+  .appl-field select option { background:var(--surface2); }
+  .appl-field textarea { resize:none; height:60px; line-height:1.5; }
+  .appl-save-btn {
+    background:var(--green); color:#fff;
+    font-family:'Noto Sans JP',sans-serif; font-size:12px; font-weight:700;
+    border:none; padding:9px 18px; border-radius:8px; cursor:pointer;
+    transition:background .2s; white-space:nowrap; align-self:flex-end;
+  }
+  .appl-save-btn:hover { background:var(--green-l); }
+  .appl-save-btn:disabled { opacity:.5; cursor:not-allowed; }
+
+  .status-badge {
+    font-size:11px; font-weight:700; padding:4px 10px; border-radius:6px;
+    white-space:nowrap; align-self:flex-start;
+  }
+  .sb-未対応    { background:var(--surface3); color:var(--text-mute); }
+  .sb-面接調整中 { background:var(--blue-bg); color:var(--blue-l); border:1px solid rgba(61,142,240,.3); }
+  .sb-面接済み  { background:var(--yel-bg); color:var(--yellow); border:1px solid rgba(212,160,23,.3); }
+  .sb-採用      { background:var(--green-bg); color:var(--green-l); border:1px solid rgba(46,160,107,.3); }
+  .sb-不採用    { background:var(--red-bg); color:var(--red); border:1px solid rgba(224,82,82,.3); }
+  .sb-保留      { background:rgba(150,150,150,.12); color:#aaa; border:1px solid rgba(150,150,150,.3); }
+
+  .gas-notice {
+    padding:20px; text-align:center; color:var(--text-mute); font-size:13px; line-height:1.75;
+  }
+  .gas-notice .notice-icon { font-size:36px; margin-bottom:12px; }
+
   /* パスワードロック画面 */
   .lock-screen {
     display: none;
@@ -305,6 +371,7 @@
 <!-- サイドバー -->
 <aside class="sidebar">
   <button class="new-btn" onclick="showView('form'); newJob()">＋ 新しい求人を作成</button>
+  <button class="new-btn" onclick="showView('applicants')" style="background:var(--blue);margin-top:-10px">👥 応募者を管理する</button>
   <div class="sb-label">📊 統計</div>
   <div class="stat-grid">
     <div class="stat-card"><div class="stat-val" id="stTotal">0</div><div class="stat-lbl">求人数合計</div></div>
@@ -489,6 +556,43 @@
     </div>
   </div>
 
+  <!-- 応募者管理ビュー -->
+  <div class="view" id="viewApplicants">
+    <div class="main-head">
+      <div>
+        <div class="main-title">応募者の管理</div>
+        <div class="main-sub">面接日程・採用結果をここで管理できます</div>
+      </div>
+      <div class="head-btns">
+        <button class="reload-btn" onclick="loadApplicants()">🔄 最新データを読み込む</button>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <div class="applicant-toolbar">
+        <select class="appl-filter" id="filterStatus" onchange="filterApplicants()">
+          <option value="">すべての状態</option>
+          <option value="未対応">未対応</option>
+          <option value="面接調整中">面接調整中</option>
+          <option value="面接済み">面接済み</option>
+          <option value="採用">採用</option>
+          <option value="不採用">不採用</option>
+          <option value="保留">保留</option>
+        </select>
+        <select class="appl-filter" id="filterJob" onchange="filterApplicants()">
+          <option value="">すべての求人</option>
+        </select>
+        <span class="appl-count" id="applCount"></span>
+      </div>
+      <div class="appl-cards" id="applCards">
+        <div class="gas-notice">
+          <div class="notice-icon">📋</div>
+          <div>「最新データを読み込む」を押すと<br>スプレッドシートの応募者一覧が表示されます。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </main>
 
 <!-- メール連携設定パネル -->
@@ -641,7 +745,9 @@
 
   function showView(v) {
     document.querySelectorAll('.view').forEach(e => e.classList.remove('on'));
-    document.getElementById(v === 'form' ? 'viewForm' : 'viewList').classList.add('on');
+    const map = { form:'viewForm', list:'viewList', applicants:'viewApplicants' };
+    document.getElementById(map[v] || 'viewList').classList.add('on');
+    if (v === 'applicants') loadApplicants();
   }
 
   function newJob() {
@@ -807,120 +913,126 @@
 `// ★ Google Apps Scriptにコピペしてデプロイしてください
 // ─────────────────────────────────────────
 // 【設定】ここだけ書き換えてください
-const ADMIN_EMAIL    = '${ae}';   // 管理者（チェスト）のメールアドレス
-const SPREADSHEET_ID = '${si}';  // 応募履歴を記録するスプレッドシートのID
-const SHEET_NAME     = '応募履歴';  // シート名（そのまま使えます）
+const ADMIN_EMAIL    = '${ae}';
+const SPREADSHEET_ID = '${si}';
+const SHEET_NAME     = '応募履歴';
 // ─────────────────────────────────────────
 
+// ── GET：応募者一覧を返す ────────────────
+function doGet(e) {
+  try {
+    const action = e.parameter.action;
+    if (action === 'getApplicants') {
+      const ss    = SpreadsheetApp.openById(SPREADSHEET_ID);
+      const sheet = ss.getSheetByName(SHEET_NAME);
+      if (!sheet) {
+        return output({ status: 'ok', rows: [] });
+      }
+      const rows = sheet.getDataRange().getValues();
+      rows.shift(); // ヘッダー行を除く
+      return output({ status: 'ok', rows: rows });
+    }
+    return output({ status: 'error', msg: 'unknown action' });
+  } catch(err) {
+    return output({ status: 'error', msg: err.toString() });
+  }
+}
+
+// ── POST：応募受付 or 採用情報更新 ──────
 function doPost(e) {
   try {
     const d = JSON.parse(e.postData.contents);
 
-    // ── ① スプレッドシートに応募履歴を記録 ──
+    // 採用情報の更新リクエスト
+    if (d.action === 'updateApplicant') {
+      const ss    = SpreadsheetApp.openById(SPREADSHEET_ID);
+      const sheet = ss.getSheetByName(SHEET_NAME);
+      if (!sheet) return output({ status: 'error', msg: 'シートが見つかりません' });
+      const row = Number(d.row);
+      sheet.getRange(row, 12).setValue(d.itvDate  || '');       // 面接日時
+      sheet.getRange(row, 13).setValue(d.empType  || '');       // 採用後の雇用形式
+      sheet.getRange(row, 14).setValue(d.wageType || '');       // 給与形態
+      sheet.getRange(row, 15).setValue(d.wageAmt  || '');       // 金額
+      sheet.getRange(row, 16).setValue(d.status   || '未対応'); // 採用結果
+      sheet.getRange(row, 17).setValue(d.note     || '');       // 備考
+      return output({ status: 'ok' });
+    }
+
+    // 新規応募の受付
     const ss    = SpreadsheetApp.openById(SPREADSHEET_ID);
     let   sheet = ss.getSheetByName(SHEET_NAME);
 
-    // シートがなければ自動で作成してヘッダーを追加
     if (!sheet) {
       sheet = ss.insertSheet(SHEET_NAME);
       sheet.appendRow([
-        '応募日時', '求人名', '会社名', 'エリア', '時給',
-        'お名前', '電話番号', 'メールアドレス', '年齢',
-        '希望勤務日・時間帯', 'メッセージ'
+        '応募日時','求人名','会社名','エリア','時給',
+        'お名前','電話番号','メールアドレス','年齢',
+        '希望勤務日・時間帯','メッセージ',
+        '面接日時','採用後の雇用形式','給与形態','金額（円）','採用結果','備考'
       ]);
-      // ヘッダー行を太字・背景色で見やすく
-      const header = sheet.getRange(1, 1, 1, 11);
-      header.setFontWeight('bold');
-      header.setBackground('#1a3052');
-      header.setFontColor('#ffffff');
+      const h = sheet.getRange(1, 1, 1, 17);
+      h.setFontWeight('bold').setFontColor('#ffffff');
+      sheet.getRange(1,1,1,11).setBackground('#1a3052');
+      sheet.getRange(1,12,1,6).setBackground('#1e4d2b');
+      sheet.setColumnWidths(1,17,130);
+      sheet.setColumnWidth(2,180); sheet.setColumnWidth(8,200); sheet.setColumnWidth(11,200);
+      const rule = SpreadsheetApp.newDataValidation()
+        .requireValueInList(['未対応','面接調整中','面接済み','採用','不採用','保留'],true).build();
+      sheet.getRange(2,16,1000,1).setDataValidation(rule);
+      const empRule = SpreadsheetApp.newDataValidation()
+        .requireValueInList(['正社員','パート','アルバイト','短期','業務委託'],true).build();
+      sheet.getRange(2,13,1000,1).setDataValidation(empRule);
+      const wageRule = SpreadsheetApp.newDataValidation()
+        .requireValueInList(['時給','日給','月給'],true).build();
+      sheet.getRange(2,14,1000,1).setDataValidation(wageRule);
+      sheet.setFrozenRows(1);
     }
 
-    // 応募データを1行追加
     sheet.appendRow([
-      d.sentAt,
-      d.jobTitle,
-      d.company,
-      d.area     || '—',
-      d.wage ? '¥' + d.wage + '/時' : '—',
-      d.name,
-      d.phone,
-      d.email    || '—',
-      d.age      || '—',
-      d.schedule || '—',
-      d.message  || '—',
+      d.sentAt, d.jobTitle, d.company, d.area||'—',
+      d.wage ? '¥'+d.wage+'/時' : '—',
+      d.name, d.phone, d.email||'—', d.age||'—',
+      d.schedule||'—', d.message||'—',
+      '', '', '', '', '未対応', ''
     ]);
 
-    // ── ② メール本文を組み立て ────────────
     const body = [
-      '新しい応募が届きました！',
-      '',
+      '新しい応募が届きました！','',
       '【求人情報】',
-      '求人名　：' + d.jobTitle,
-      '会社名　：' + d.company,
-      'エリア　：' + (d.area  || '—'),
-      '時給　　：' + (d.wage  ? '¥' + d.wage + '/時' : '—'),
-      '',
+      '求人名：'+d.jobTitle, '会社名：'+d.company, 'エリア：'+(d.area||'—'),
+      '時給：'+(d.wage?'¥'+d.wage+'/時':'—'),'',
       '【応募者情報】',
-      'お名前　　　　：' + d.name,
-      '電話番号　　　：' + d.phone,
-      'メールアドレス：' + (d.email    || '—'),
-      '年齢　　　　　：' + (d.age      || '—'),
-      '希望勤務　　　：' + (d.schedule || '—'),
-      'メッセージ　　：' + (d.message  || '—'),
-      '',
-      '送信日時：' + d.sentAt,
-      '',
-      '─────────────────',
-      '※ 応募履歴はスプレッドシートにも自動記録されています。',
+      'お名前：'+d.name, '電話番号：'+d.phone,
+      'メールアドレス：'+(d.email||'—'), '年齢：'+(d.age||'—'),
+      '希望勤務：'+(d.schedule||'—'), 'メッセージ：'+(d.message||'—'),'',
+      '送信日時：'+d.sentAt,'',
+      '※ 応募履歴はスプレッドシートに自動記録されています。',
     ].join('\\n');
 
-    const subject = '【求人応募】' + d.jobTitle + ' に応募がありました';
-
-    // ③ 管理者（チェスト）に通知メール
+    const subject = '【求人応募】'+d.jobTitle+' に応募がありました';
     GmailApp.sendEmail(ADMIN_EMAIL, subject, body);
-
-    // ④ 店舗担当者にも通知メール
-    if (d.contactEmail) {
-      GmailApp.sendEmail(d.contactEmail, subject, body);
-    }
-
-    // ⑤ 応募者に受付確認メールを自動返信
+    if (d.contactEmail) GmailApp.sendEmail(d.contactEmail, subject, body);
     if (d.email) {
-      const replyBody = [
-        d.name + ' 様',
-        '',
-        'このたびは「' + d.jobTitle + '」にご応募いただき、',
-        'ありがとうございます。',
-        '',
-        '応募内容を受け付けました。',
-        '担当者より順次ご連絡いたしますので、',
-        'しばらくお待ちください。',
-        '',
-        '──────────────────',
-        '【ご応募内容】',
-        '求人名：' + d.jobTitle,
-        '会社名：' + d.company,
-        '──────────────────',
-        '',
-        '※ このメールは自動送信です。返信はできません。',
-      ].join('\\n');
-
-      GmailApp.sendEmail(
-        d.email,
-        '【応募受付】' + d.jobTitle + ' へのご応募ありがとうございます',
-        replyBody
-      );
+      GmailApp.sendEmail(d.email,
+        '【応募受付】'+d.jobTitle+' へのご応募ありがとうございます',
+        [d.name+' 様','',
+         '「'+d.jobTitle+'」にご応募いただきありがとうございます。','',
+         '応募内容を受け付けました。','担当者より順次ご連絡いたします。','',
+         '求人名：'+d.jobTitle,'会社名：'+d.company,'',
+         '※ このメールは自動送信です。返信はできません。'
+        ].join('\\n'));
     }
-
-    return ContentService
-      .createTextOutput(JSON.stringify({ status: 'ok' }))
-      .setMimeType(ContentService.MimeType.JSON);
+    return output({ status: 'ok' });
 
   } catch(err) {
-    return ContentService
-      .createTextOutput(JSON.stringify({ status: 'error', msg: err.toString() }))
-      .setMimeType(ContentService.MimeType.JSON);
+    return output({ status: 'error', msg: err.toString() });
   }
+}
+
+function output(obj) {
+  return ContentService
+    .createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
 }`;
   }
 
@@ -944,6 +1056,182 @@ function doPost(e) {
         endDate:'', deadline:'', description:'・コーヒーの抽出・ドリンク作成\n・接客・レジ対応\n・店内清掃\n\nバリスタ経験があれば優遇します。',
         tags:'バリスタ優遇,まかない有', active:true, createdAt:new Date(Date.now()-864e5).toISOString(), updatedAt:new Date().toISOString() }
     ]));
+  }
+
+  // ── 応募者管理 ────────────────────────────
+  let allApplicants = [];
+
+  async function loadApplicants() {
+    const s = getSettings();
+    if (!s.gasUrl) {
+      document.getElementById('applCards').innerHTML = `
+        <div class="gas-notice">
+          <div class="notice-icon">⚙️</div>
+          <div>連携設定でGASのURLを設定してください。<br>設定後に「最新データを読み込む」を押してください。</div>
+        </div>`;
+      return;
+    }
+    document.getElementById('applCards').innerHTML = `
+      <div class="gas-notice"><div class="notice-icon">⏳</div><div>読み込み中です…</div></div>`;
+    try {
+      const res  = await fetch(s.gasUrl + '?action=getApplicants');
+      const data = await res.json();
+      if (data.status === 'ok') {
+        allApplicants = data.rows;
+        buildJobFilter();
+        filterApplicants();
+      } else {
+        throw new Error(data.msg || 'エラー');
+      }
+    } catch(e) {
+      document.getElementById('applCards').innerHTML = `
+        <div class="gas-notice">
+          <div class="notice-icon">❌</div>
+          <div>データの読み込みに失敗しました。<br>GASのURLと権限設定を確認してください。<br><small style="color:var(--red)">${e.message}</small></div>
+        </div>`;
+    }
+  }
+
+  function buildJobFilter() {
+    const jobs = [...new Set(allApplicants.map(r => r[1]).filter(Boolean))];
+    const sel  = document.getElementById('filterJob');
+    sel.innerHTML = '<option value="">すべての求人</option>' +
+      jobs.map(j => `<option value="${j}">${j}</option>`).join('');
+  }
+
+  function filterApplicants() {
+    const st  = document.getElementById('filterStatus').value;
+    const job = document.getElementById('filterJob').value;
+    const filtered = allApplicants.filter(r => {
+      if (st  && r[13] !== st)  return false;
+      if (job && r[1]  !== job) return false;
+      return true;
+    });
+    document.getElementById('applCount').textContent = filtered.length + '件';
+    renderApplicantCards(filtered);
+  }
+
+  function renderApplicantCards(rows) {
+    const el = document.getElementById('applCards');
+    if (!rows.length) {
+      el.innerHTML = `<div class="gas-notice"><div class="notice-icon">🔍</div><div>該当する応募者がいません</div></div>`;
+      return;
+    }
+    el.innerHTML = rows.map((r, i) => {
+      const status = r[15] || '未対応';
+      const rowIdx = allApplicants.indexOf(r) + 2; // スプレッドシートの行番号（1行目がヘッダー）
+      return `
+        <div class="appl-card status-${status}" id="card-${rowIdx}">
+          <div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+              <div class="appl-name">${r[5] || '—'}</div>
+              <span class="status-badge sb-${status}">${status}</span>
+            </div>
+            <div class="appl-job">📋 ${r[1] || '—'}　／　${r[2] || '—'}</div>
+            <div class="appl-meta">
+              <span>📞 ${r[6] || '—'}</span>
+              <span>✉ ${r[7] || '—'}</span>
+              ${r[8] ? `<span>🎂 ${r[8]}歳</span>` : ''}
+              ${r[9] ? `<span>🕐 ${r[9]}</span>` : ''}
+              <span style="color:var(--text-mute)">応募日：${r[0] || '—'}</span>
+            </div>
+            ${r[10] ? `<div class="appl-msg">💬 ${r[10]}</div>` : ''}
+            ${(r[12]||r[13]||r[14]) ? `
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+              ${r[12] ? `<span style="background:var(--green-bg);color:var(--green-l);border:1px solid rgba(46,160,107,.3);font-size:11px;font-weight:700;padding:3px 10px;border-radius:6px">👔 ${r[12]}</span>` : ''}
+              ${r[13]&&r[14] ? `<span style="background:var(--blue-bg);color:var(--blue-l);border:1px solid rgba(61,142,240,.3);font-size:11px;font-weight:700;padding:3px 10px;border-radius:6px">💴 ${r[13]} ¥${Number(r[14]).toLocaleString()}</span>` : ''}
+            </div>` : ''}
+            <div class="appl-edit-grid">
+              <div class="appl-field">
+                <label>面接日時</label>
+                <input type="text" id="itv-date-${rowIdx}" value="${r[11]||''}" placeholder="例：11/15 14:00">
+              </div>
+              <div class="appl-field">
+                <label>採用結果</label>
+                <select id="itv-status-${rowIdx}">
+                  ${['未対応','面接調整中','面接済み','採用','不採用','保留'].map(s =>
+                    `<option value="${s}" ${status===s?'selected':''}>${s}</option>`
+                  ).join('')}
+                </select>
+              </div>
+              <div class="appl-field">
+                <label>採用後の雇用形式</label>
+                <select id="itv-emptype-${rowIdx}">
+                  <option value="" ${!r[12]?'selected':''}>選択してください</option>
+                  ${['正社員','パート','アルバイト','短期','業務委託'].map(s =>
+                    `<option value="${s}" ${r[12]===s?'selected':''}>${s}</option>`
+                  ).join('')}
+                </select>
+              </div>
+              <div class="appl-field">
+                <label>給与形態</label>
+                <select id="itv-wagetype-${rowIdx}">
+                  <option value="" ${!r[13]?'selected':''}>選択してください</option>
+                  ${['時給','日給','月給'].map(s =>
+                    `<option value="${s}" ${r[13]===s?'selected':''}>${s}</option>`
+                  ).join('')}
+                </select>
+              </div>
+              <div class="appl-field">
+                <label>金額（円）</label>
+                <input type="text" id="itv-wageamt-${rowIdx}" value="${r[14]||''}" placeholder="例：1200 / 200000">
+              </div>
+              <div class="appl-field">
+                <label>備考</label>
+                <textarea id="itv-note-${rowIdx}" placeholder="メモを入力...">${r[16]||''}</textarea>
+              </div>
+            </div>
+          </div>
+          <div>
+            <button class="appl-save-btn" id="save-btn-${rowIdx}" onclick="saveApplicant(${rowIdx})">保存する</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  async function saveApplicant(rowIdx) {
+    const s = getSettings();
+    if (!s.gasUrl) { showToast('GASのURLが設定されていません'); return; }
+    const btn = document.getElementById(`save-btn-${rowIdx}`);
+    btn.disabled = true; btn.textContent = '保存中…';
+
+    const payload = {
+      action:    'updateApplicant',
+      row:       rowIdx,
+      itvDate:   document.getElementById(`itv-date-${rowIdx}`).value,
+      status:    document.getElementById(`itv-status-${rowIdx}`).value,
+      empType:   document.getElementById(`itv-emptype-${rowIdx}`).value,
+      wageType:  document.getElementById(`itv-wagetype-${rowIdx}`).value,
+      wageAmt:   document.getElementById(`itv-wageamt-${rowIdx}`).value,
+      note:      document.getElementById(`itv-note-${rowIdx}`).value,
+    };
+
+    try {
+      const res  = await fetch(s.gasUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.status === 'ok') {
+        // ローカルのデータも更新
+        const r = allApplicants[rowIdx - 2];
+        r[11] = payload.itvDate;
+        r[12] = payload.empType;
+        r[13] = payload.wageType;
+        r[14] = payload.wageAmt;
+        r[15] = payload.status;
+        r[16] = payload.note;
+        showToast('保存しました ✓');
+        filterApplicants(); // カードを再描画
+      } else {
+        throw new Error(data.msg || 'エラー');
+      }
+    } catch(e) {
+      showToast('保存に失敗しました：' + e.message);
+      btn.disabled = false; btn.textContent = '保存する';
+    }
   }
 
   // ── パスワード認証（連携設定のみ） ──────────
