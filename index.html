@@ -230,9 +230,67 @@
     .main { grid-row:3; padding:18px 14px; }
     .fg { grid-template-columns:1fr; }
   }
+
+  /* パスワードロック画面 */
+  .lock-screen {
+    display: none;
+    position: fixed; inset: 0;
+    background: var(--bg);
+    z-index: 9999;
+    align-items: center; justify-content: center;
+  }
+  .lock-screen.show { display: flex; }
+  .lock-box {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 18px;
+    padding: 44px 40px;
+    width: 360px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+  .lock-icon  { font-size: 48px; margin-bottom: 18px; }
+  .lock-title { font-size: 20px; font-weight: 900; margin-bottom: 6px; }
+  .lock-sub   { font-size: 13px; color: var(--text-mute); margin-bottom: 28px; line-height: 1.6; }
+  .lock-input {
+    width: 100%; background: var(--surface2);
+    border: 1.5px solid var(--border2); color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif; font-size: 16px;
+    padding: 13px 16px; border-radius: 10px; outline: none;
+    text-align: center; letter-spacing: 3px;
+    transition: border-color .2s; margin-bottom: 14px;
+  }
+  .lock-input:focus { border-color: var(--blue); }
+  .lock-input::placeholder { letter-spacing: 0; color: var(--text-mute); }
+  .lock-btn {
+    width: 100%; background: var(--green); color: #fff;
+    font-family: 'Noto Sans JP', sans-serif; font-size: 14px; font-weight: 700;
+    border: none; padding: 13px; border-radius: 10px; cursor: pointer;
+    transition: background .2s; margin-bottom: 12px;
+  }
+  .lock-btn:hover { background: var(--green-l); }
+  .lock-error {
+    font-size: 12px; color: var(--red);
+    display: none; margin-top: 4px;
+  }
+  .lock-error.show { display: block; }
 </style>
 </head>
 <body>
+
+<!-- 連携設定パスワード確認モーダル -->
+<div class="lock-screen" id="lockScreen">
+  <div class="lock-box">
+    <div class="lock-icon">🔐</div>
+    <div class="lock-title">連携設定</div>
+    <div class="lock-sub">連携設定を変更するには<br>パスワードが必要です。</div>
+    <input type="password" class="lock-input" id="lockInput"
+      placeholder="パスワードを入力"
+      onkeydown="if(event.key==='Enter') checkPassword()">
+    <button class="lock-btn" onclick="checkPassword()">確認する</button>
+    <div class="lock-error" id="lockError">パスワードが違います。もう一度お試しください。</div>
+  </div>
+</div>
 
 <!-- トップバー -->
 <div class="topbar">
@@ -471,12 +529,32 @@
 
       <div class="set-divider"></div>
 
+      <!-- スプレッドシート設定 -->
+      <div class="set-section-lbl">応募履歴の記録先（スプレッドシート）</div>
+      <div class="mail-highlight">
+        <span class="mail-highlight-icon">📊</span>
+        <span class="mail-highlight-text">
+          応募があるたびに、指定したスプレッドシートに自動で記録されます。<br>
+          誰がいつどの求人に応募したか、あとからまとめて確認できます。
+        </span>
+      </div>
+      <div class="sf2">
+        <label>スプレッドシートID</label>
+        <input type="text" id="s-sheetId" placeholder="例：1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms">
+        <span class="sh">
+          Googleスプレッドシートを新規作成し、URLの中にある長い英数字の部分を貼り付けてください。<br>
+          例：https://docs.google.com/spreadsheets/d/<strong>ここの部分</strong>/edit
+        </span>
+      </div>
+
+      <div class="set-divider"></div>
+
       <!-- GAS設定 -->
-      <div class="set-section-lbl">GAS（メール送信の設定）</div>
+      <div class="set-section-lbl">GAS（送信・記録の設定）</div>
       <div class="sf2">
         <label>Webhook URL</label>
         <input type="url" id="s-gasUrl" placeholder="https://script.google.com/macros/s/xxxxx/exec">
-        <span class="sh">GASをデプロイして発行されたURLを貼り付けてください。設定するとメールが自動送信されます。</span>
+        <span class="sh">GASをデプロイして発行されたURLを貼り付けてください。メール送信と応募記録が自動で動きます。</span>
       </div>
 
       <!-- GASコード -->
@@ -666,97 +744,147 @@
   }
 
   // ── メール連携設定 ───────────────────────────
-  function openSettings() {
-    const s = getSettings();
-    document.getElementById('s-adminEmail').value = s.adminEmail || '';
-    document.getElementById('s-gasUrl').value     = s.gasUrl     || '';
-    updateMscCard(s);
-    renderGasCode(s.adminEmail || '');
-    document.getElementById('setOverlay').classList.add('open');
-  }
   function closeSettings()    { document.getElementById('setOverlay').classList.remove('open'); }
   function closeSetOutside(e) { if (e.target === document.getElementById('setOverlay')) closeSettings(); }
 
   function saveSettings() {
     const s = {
       adminEmail: document.getElementById('s-adminEmail').value.trim(),
+      sheetId:    document.getElementById('s-sheetId').value.trim(),
       gasUrl:     document.getElementById('s-gasUrl').value.trim(),
     };
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
     updateMscCard(s);
-    renderGasCode(s.adminEmail);
+    renderGasCode(s.adminEmail, s.sheetId);
     updateTopBadge(s);
-    showToast('メール連携設定を保存しました ✓');
+    showToast('連携設定を保存しました ✓');
   }
 
   function resetSettings() {
-    if (!confirm('メール連携の設定をリセットしますか？')) return;
+    if (!confirm('連携設定をリセットしますか？')) return;
     localStorage.removeItem(SETTINGS_KEY);
     document.getElementById('s-adminEmail').value = '';
+    document.getElementById('s-sheetId').value    = '';
     document.getElementById('s-gasUrl').value     = '';
     updateMscCard({});
-    renderGasCode('');
+    renderGasCode('', '');
     updateTopBadge({});
     showToast('設定をリセットしました');
   }
 
   function updateMscCard(s) {
-    const on   = !!s.adminEmail;
+    const on   = !!(s.adminEmail || s.sheetId);
     const card = document.getElementById('mscCard');
     const lbl  = document.getElementById('mscLabel');
     const desc = document.getElementById('mscDesc');
-    card.className = 'mail-status-card ' + (on ? 'msc-on' : 'msc-off');
-    lbl.textContent  = on ? '✓ メール通知　設定済み' : '未設定';
-    desc.textContent = on ? '管理者メール：' + s.adminEmail : '以下の情報を入力してメール通知を有効にしてください';
+    card.className   = 'mail-status-card ' + (on ? 'msc-on' : 'msc-off');
+    lbl.textContent  = on ? '✓ メール・記録　設定済み' : '未設定';
+    const parts = [];
+    if (s.adminEmail) parts.push('管理者メール：' + s.adminEmail);
+    if (s.sheetId)    parts.push('スプレッドシート：設定済み');
+    desc.textContent = on ? parts.join('　／　') : '以下の情報を入力してメール通知と記録を有効にしてください';
   }
 
   function updateTopBadge(s) {
     const b = document.getElementById('mailBadge');
-    b.style.display = s.adminEmail ? 'flex' : 'none';
+    b.style.display = (s.adminEmail || s.sheetId) ? 'flex' : 'none';
   }
 
-  function renderGasCode(adminEmail) {
+  function openSettings() {
+    const s = getSettings();
+    document.getElementById('s-adminEmail').value = s.adminEmail || '';
+    document.getElementById('s-sheetId').value    = s.sheetId    || '';
+    document.getElementById('s-gasUrl').value     = s.gasUrl     || '';
+    updateMscCard(s);
+    renderGasCode(s.adminEmail || '', s.sheetId || '');
+    document.getElementById('setOverlay').classList.add('open');
+  }
+
+  function renderGasCode(adminEmail, sheetId) {
     const ae = adminEmail || 'YOUR_ADMIN_EMAIL@example.com';
+    const si = sheetId   || 'YOUR_SPREADSHEET_ID';
     document.getElementById('gasCode').textContent =
 `// ★ Google Apps Scriptにコピペしてデプロイしてください
-// 管理者（チェスト）のメールアドレス
-const ADMIN_EMAIL = '${ae}';
+// ─────────────────────────────────────────
+// 【設定】ここだけ書き換えてください
+const ADMIN_EMAIL    = '${ae}';   // 管理者（チェスト）のメールアドレス
+const SPREADSHEET_ID = '${si}';  // 応募履歴を記録するスプレッドシートのID
+const SHEET_NAME     = '応募履歴';  // シート名（そのまま使えます）
+// ─────────────────────────────────────────
 
 function doPost(e) {
   try {
     const d = JSON.parse(e.postData.contents);
 
-    // ── 応募内容の本文を組み立て ──────────────
+    // ── ① スプレッドシートに応募履歴を記録 ──
+    const ss    = SpreadsheetApp.openById(SPREADSHEET_ID);
+    let   sheet = ss.getSheetByName(SHEET_NAME);
+
+    // シートがなければ自動で作成してヘッダーを追加
+    if (!sheet) {
+      sheet = ss.insertSheet(SHEET_NAME);
+      sheet.appendRow([
+        '応募日時', '求人名', '会社名', 'エリア', '時給',
+        'お名前', '電話番号', 'メールアドレス', '年齢',
+        '希望勤務日・時間帯', 'メッセージ'
+      ]);
+      // ヘッダー行を太字・背景色で見やすく
+      const header = sheet.getRange(1, 1, 1, 11);
+      header.setFontWeight('bold');
+      header.setBackground('#1a3052');
+      header.setFontColor('#ffffff');
+    }
+
+    // 応募データを1行追加
+    sheet.appendRow([
+      d.sentAt,
+      d.jobTitle,
+      d.company,
+      d.area     || '—',
+      d.wage ? '¥' + d.wage + '/時' : '—',
+      d.name,
+      d.phone,
+      d.email    || '—',
+      d.age      || '—',
+      d.schedule || '—',
+      d.message  || '—',
+    ]);
+
+    // ── ② メール本文を組み立て ────────────
     const body = [
       '新しい応募が届きました！',
       '',
       '【求人情報】',
-      '求人名：' + d.jobTitle,
-      '会社名：' + d.company,
-      'エリア：' + (d.area || '—'),
+      '求人名　：' + d.jobTitle,
+      '会社名　：' + d.company,
+      'エリア　：' + (d.area  || '—'),
+      '時給　　：' + (d.wage  ? '¥' + d.wage + '/時' : '—'),
       '',
       '【応募者情報】',
-      'お名前：'     + d.name,
-      '電話番号：'   + d.phone,
-      'メールアドレス：' + (d.email || '—'),
-      '年齢：'       + (d.age      || '—'),
-      '希望勤務：'   + (d.schedule || '—'),
-      'メッセージ：' + (d.message  || '—'),
+      'お名前　　　　：' + d.name,
+      '電話番号　　　：' + d.phone,
+      'メールアドレス：' + (d.email    || '—'),
+      '年齢　　　　　：' + (d.age      || '—'),
+      '希望勤務　　　：' + (d.schedule || '—'),
+      'メッセージ　　：' + (d.message  || '—'),
       '',
       '送信日時：' + d.sentAt,
+      '',
+      '─────────────────',
+      '※ 応募履歴はスプレッドシートにも自動記録されています。',
     ].join('\\n');
 
     const subject = '【求人応募】' + d.jobTitle + ' に応募がありました';
 
-    // ① 管理者（チェスト）に通知メール
+    // ③ 管理者（チェスト）に通知メール
     GmailApp.sendEmail(ADMIN_EMAIL, subject, body);
 
-    // ② 店舗担当者にも通知メール（担当者メールが設定されている場合）
+    // ④ 店舗担当者にも通知メール
     if (d.contactEmail) {
       GmailApp.sendEmail(d.contactEmail, subject, body);
     }
 
-    // ③ 応募者に受付確認メールを自動返信
+    // ⑤ 応募者に受付確認メールを自動返信
     if (d.email) {
       const replyBody = [
         d.name + ' 様',
@@ -773,6 +901,8 @@ function doPost(e) {
         '求人名：' + d.jobTitle,
         '会社名：' + d.company,
         '──────────────────',
+        '',
+        '※ このメールは自動送信です。返信はできません。',
       ].join('\\n');
 
       GmailApp.sendEmail(
@@ -814,6 +944,55 @@ function doPost(e) {
         endDate:'', deadline:'', description:'・コーヒーの抽出・ドリンク作成\n・接客・レジ対応\n・店内清掃\n\nバリスタ経験があれば優遇します。',
         tags:'バリスタ優遇,まかない有', active:true, createdAt:new Date(Date.now()-864e5).toISOString(), updatedAt:new Date().toISOString() }
     ]));
+  }
+
+  // ── パスワード認証（連携設定のみ） ──────────
+  const PASS_HASH   = 'b3aca775ef18d6bf532cb092c68fac1aba36e8414b1bbd01f106463e26848f84';
+  const SESSION_KEY = 'jobflow_settings_auth';
+
+  async function hashPassword(pw) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+  }
+
+  // 連携設定ボタンを押したときに呼ばれる
+  function openSettings() {
+    // セッション中に認証済みならそのまま設定パネルを開く
+    if (sessionStorage.getItem(SESSION_KEY) === 'ok') {
+      openSettingsPanel();
+      return;
+    }
+    // 未認証ならパスワード確認画面を表示
+    document.getElementById('lockInput').value = '';
+    document.getElementById('lockError').classList.remove('show');
+    document.getElementById('lockScreen').classList.add('show');
+    setTimeout(() => document.getElementById('lockInput').focus(), 100);
+  }
+
+  async function checkPassword() {
+    const input = document.getElementById('lockInput').value;
+    const hash  = await hashPassword(input);
+    if (hash === PASS_HASH) {
+      sessionStorage.setItem(SESSION_KEY, 'ok');
+      document.getElementById('lockScreen').classList.remove('show');
+      document.getElementById('lockError').classList.remove('show');
+      openSettingsPanel();
+    } else {
+      document.getElementById('lockError').classList.add('show');
+      document.getElementById('lockInput').value = '';
+      document.getElementById('lockInput').focus();
+    }
+  }
+
+  // パスワード確認後に実際の設定パネルを開く
+  function openSettingsPanel() {
+    const s = getSettings();
+    document.getElementById('s-adminEmail').value = s.adminEmail || '';
+    document.getElementById('s-sheetId').value    = s.sheetId    || '';
+    document.getElementById('s-gasUrl').value     = s.gasUrl     || '';
+    updateMscCard(s);
+    renderGasCode(s.adminEmail || '', s.sheetId || '');
+    document.getElementById('setOverlay').classList.add('open');
   }
 
   seedDemo();
